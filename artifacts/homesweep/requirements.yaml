@@ -1,0 +1,18 @@
+packages:
+  "framer-motion": "Required for complex, physics-based swipe animations and layout transitions (Tinder-style card deck)"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to merge tailwind classes safely"
+  "@use-gesture/react": "For advanced drag gesture handling on the swipe cards"
+
+images:
+  - path: "artifacts/homesweep/public/images/avatar.png"
+    description: "A professional, friendly headshot of a person, soft lighting, modern clean solid background, suitable for a user profile avatar"
+    aspect_ratio: "1:1"
+  - path: "artifacts/homesweep/public/images/logo-mark.png"
+    description: "A minimalist sleek abstract logo for a modern real estate app, incorporating a subtle house shape and a sense of motion or swiping, light blue and white colors"
+    aspect_ratio: "1:1"
+
+notes:
+  - App uses framer-motion and @use-gesture/react for the core swipe mechanic.
+  - Relying on generated API hooks from @workspace/api-client-react.
+  - Using Unsplash images for the property listings fallback if API images are missing.
