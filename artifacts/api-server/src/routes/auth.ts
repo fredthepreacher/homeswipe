@@ -8,7 +8,7 @@ import { z } from "zod";
 import { logAction } from "../lib/audit";
 
 const router: IRouter = Router();
-const JWT_SECRET = process.env["JWT_SECRET"] || "homesweep-jwt-dev-secret-2025";
+const JWT_SECRET = process.env["JWT_SECRET"]!;
 const SALT_ROUNDS = 10;
 
 const RegisterBody = z.object({
@@ -101,9 +101,7 @@ router.post("/auth/register", async (req, res) => {
       .returning();
 
     const token = makeToken(user.id, user.role);
-    res.status(201).json({ token, user: safeUser(user) });
-
-    logAction({
+    void logAction({
       userId: user.id,
       userName: user.name,
       userRole: user.role,
@@ -113,10 +111,11 @@ router.post("/auth/register", async (req, res) => {
       details: { email: user.email, phone: user.phone, role: user.role },
       ipAddress: req.ip,
     });
+    return res.status(201).json({ token, user: safeUser(user) });
   } catch (err: any) {
     if (err?.issues) return res.status(400).json({ error: "Invalid request data" });
     req.log.error({ err }, "Register failed");
-    res.status(500).json({ error: "Registration failed" });
+    return res.status(500).json({ error: "Registration failed" });
   }
 });
 
@@ -141,9 +140,7 @@ router.post("/auth/login", async (req, res) => {
     }
 
     const token = makeToken(user.id, user.role);
-    res.json({ token, user: safeUser(user) });
-
-    logAction({
+    void logAction({
       userId: user.id,
       userName: user.name,
       userRole: user.role,
@@ -153,10 +150,11 @@ router.post("/auth/login", async (req, res) => {
       details: { identifier, role: user.role },
       ipAddress: req.ip,
     });
+    return res.json({ token, user: safeUser(user) });
   } catch (err: any) {
     if (err?.issues) return res.status(400).json({ error: "Invalid request data" });
     req.log.error({ err }, "Login failed");
-    res.status(500).json({ error: "Login failed" });
+    return res.status(500).json({ error: "Login failed" });
   }
 });
 
@@ -174,11 +172,11 @@ router.post("/auth/forgot-password", async (req, res) => {
       return res.status(404).json({ error: "No account found with that email or phone" });
     }
 
-    res.json({ success: true, message: "If an account exists, a reset link has been sent." });
+    return res.json({ success: true, message: "If an account exists, a reset link has been sent." });
   } catch (err: any) {
     if (err?.issues) return res.status(400).json({ error: "Invalid request data" });
     req.log.error({ err }, "Forgot password failed");
-    res.status(500).json({ error: "Failed to process request" });
+    return res.status(500).json({ error: "Failed to process request" });
   }
 });
 
@@ -196,10 +194,10 @@ router.post("/auth/webauthn/register", async (req, res) => {
       .set({ webauthnCredentialId: credentialId })
       .where(eq(usersTable.id, payload.userId));
 
-    res.json({ success: true });
+    return res.json({ success: true });
   } catch (err: any) {
     req.log.error({ err }, "WebAuthn register failed");
-    res.status(500).json({ error: "Failed to register biometric" });
+    return res.status(500).json({ error: "Failed to register biometric" });
   }
 });
 
@@ -218,10 +216,10 @@ router.post("/auth/webauthn/login", async (req, res) => {
     }
 
     const token = makeToken(user.id, user.role);
-    res.json({ token, user: safeUser(user) });
+    return res.json({ token, user: safeUser(user) });
   } catch (err: any) {
     req.log.error({ err }, "WebAuthn login failed");
-    res.status(500).json({ error: "Biometric login failed" });
+    return res.status(500).json({ error: "Biometric login failed" });
   }
 });
 

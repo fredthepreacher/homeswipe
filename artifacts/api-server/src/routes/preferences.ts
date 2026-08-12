@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 const router: IRouter = Router();
-const JWT_SECRET = process.env["JWT_SECRET"] || "homesweep-jwt-dev-secret-2025";
+const JWT_SECRET = process.env["JWT_SECRET"]!;
 
 function requireAuth(req: any): number {
   const header = req.headers["authorization"];
@@ -43,11 +43,11 @@ router.get("/preferences", async (req, res) => {
     const userId = requireAuth(req);
     const [prefs] = await db.select().from(buyerPreferencesTable)
       .where(eq(buyerPreferencesTable.userId, userId));
-    res.json(prefs ?? null);
+    return res.json(prefs ?? null);
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "GET /preferences");
-    res.status(500).json({ error: "Failed to fetch preferences" });
+    return res.status(500).json({ error: "Failed to fetch preferences" });
   }
 });
 
@@ -85,11 +85,11 @@ router.put("/preferences", async (req, res) => {
         .returning();
     }
 
-    res.json(result);
+    return res.json(result);
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "PUT /preferences");
-    res.status(500).json({ error: "Failed to save preferences" });
+    return res.status(500).json({ error: "Failed to save preferences" });
   }
 });
 

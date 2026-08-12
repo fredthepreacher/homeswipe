@@ -44,10 +44,10 @@ router.get("/listings", async (req, res) => {
     }));
 
     const parsed = GetListingsResponse.parse(result);
-    res.json(parsed);
+    return res.json(parsed);
   } catch (err) {
     req.log.error({ err }, "Failed to fetch listings");
-    res.status(500).json({ error: "Failed to fetch listings" });
+    return res.status(500).json({ error: "Failed to fetch listings" });
   }
 });
 
@@ -63,10 +63,10 @@ router.post("/listings/:id/swipe", async (req, res) => {
 
     const saved = body.direction === "right";
     const parsed = SwipeListingResponse.parse({ success: true, saved });
-    res.json(parsed);
+    return res.json(parsed);
   } catch (err) {
     req.log.error({ err }, "Failed to record swipe");
-    res.status(500).json({ error: "Failed to record swipe" });
+    return res.status(500).json({ error: "Failed to record swipe" });
   }
 });
 
@@ -103,10 +103,10 @@ router.get("/saved", async (req, res) => {
     }));
 
     const parsed = GetSavedListingsResponse.parse(result);
-    res.json(parsed);
+    return res.json(parsed);
   } catch (err) {
     req.log.error({ err }, "Failed to fetch saved listings");
-    res.status(500).json({ error: "Failed to fetch saved listings" });
+    return res.status(500).json({ error: "Failed to fetch saved listings" });
   }
 });
 

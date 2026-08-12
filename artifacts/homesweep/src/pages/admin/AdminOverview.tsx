@@ -167,7 +167,7 @@ export default function AdminOverview() {
         <div className="flex items-center justify-between mb-1">
           <div>
             <p className="text-indigo-300 text-xs font-bold uppercase tracking-widest">Admin Portal</p>
-            <h1 className="text-xl font-bold text-white">HomeSweep Dashboard</h1>
+            <h1 className="text-xl font-bold text-white">HomeSwipe Dashboard</h1>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-indigo-500/30 flex items-center justify-center">
             <ShieldCheck className="w-5 h-5 text-indigo-300" />

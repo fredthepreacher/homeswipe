@@ -9,7 +9,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { authApi } from "@/lib/auth-api";
 import { useWebAuthn } from "@/hooks/use-webauthn";
-import { HomeSweepLogo } from "@/components/HomeSweepLogo";
+import { HomeSwipeLogo } from "@/components/HomeSwipeLogo";
 
 type Tab       = "email" | "phone";
 type Role      = "consumer" | "broker" | "landlord";
@@ -118,7 +118,12 @@ export default function SignUp() {
 
     setLoading(true);
     try {
-      const body: Record<string, any> = { name, password, role };
+      const body: {
+        name: string; password: string; role: string;
+        email?: string; phone?: string;
+        licenseId?: string; licenseState?: string;
+        brokerage?: string; businessAddress?: string;
+      } = { name, password, role };
       if (tab === "email") body.email = identifier;
       else body.phone = identifier.replace(/\D/g, "");
 
@@ -154,7 +159,7 @@ export default function SignUp() {
     try {
       const credentialId = await register(loggedInUserId, loggedInName);
       await authApi.webauthnRegisterCredential(credentialId, loggedInToken);
-      localStorage.setItem("homesweep_webauthn_id", credentialId);
+      localStorage.setItem("homeswipe_webauthn_id", credentialId);
       setBiometricDone(true);
       setTimeout(() => navigate("/"), 1200);
     } catch (err: any) {
@@ -234,8 +239,8 @@ export default function SignUp() {
           </button>
 
           <div className="mb-8">
-            <HomeSweepLogo className="text-3xl mb-4" />
-            <h2 className="text-2xl font-bold mb-1">How will you use HomeSweep?</h2>
+            <HomeSwipeLogo className="text-3xl mb-4" />
+            <h2 className="text-2xl font-bold mb-1">How will you use HomeSwipe?</h2>
             <p className="text-muted-foreground text-sm">Choose your account type to get started.</p>
           </div>
 
@@ -313,7 +318,7 @@ export default function SignUp() {
 
         {/* Header */}
         <div className="mb-6">
-          <HomeSweepLogo className="text-2xl mb-3" />
+          <HomeSwipeLogo className="text-2xl mb-3" />
           <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
             <roleInfo.icon className="w-3 h-3" />
             {roleInfo.title}

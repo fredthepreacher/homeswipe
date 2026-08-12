@@ -2,6 +2,12 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { seedAdminUser } from "./lib/seed-admin";
 
+if (!process.env["JWT_SECRET"]) {
+  throw new Error(
+    "JWT_SECRET environment variable is required but was not provided.",
+  );
+}
+
 seedAdminUser();
 
 const rawPort = process.env["PORT"];

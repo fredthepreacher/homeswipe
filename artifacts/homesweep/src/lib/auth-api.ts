@@ -14,7 +14,17 @@ async function post<T>(path: string, body: unknown, token?: string): Promise<T> 
 interface AuthResponse { token: string; user: AuthUser }
 
 export const authApi = {
-  register: (body: { name: string; email?: string; phone?: string; password: string }) =>
+  register: (body: {
+    name: string;
+    email?: string;
+    phone?: string;
+    password: string;
+    role?: string;
+    licenseId?: string;
+    licenseState?: string;
+    brokerage?: string;
+    businessAddress?: string;
+  }) =>
     post<AuthResponse>("/register", body),
 
   login: (identifier: string, password: string) =>

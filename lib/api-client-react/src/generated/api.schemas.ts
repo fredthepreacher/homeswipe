@@ -20,6 +20,7 @@ export interface Listing {
   sqft: number;
   imageUrl: string;
   propertyType: string;
+  subtype?: string | null;
   description: string;
   saved: boolean;
 }

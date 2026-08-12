@@ -1,7 +1,7 @@
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function authHeaders() {
-  const token = localStorage.getItem("homesweep_token");
+  const token = localStorage.getItem("homeswipe_token");
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

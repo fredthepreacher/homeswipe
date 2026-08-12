@@ -11,7 +11,7 @@ import { eq, inArray, desc, and, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 const router: IRouter = Router();
-const JWT_SECRET = process.env["JWT_SECRET"] || "homesweep-jwt-dev-secret-2025";
+const JWT_SECRET = process.env["JWT_SECRET"]!;
 
 function requireAuth(req: any): { userId: number; role: string } {
   const header = req.headers["authorization"];
@@ -110,11 +110,11 @@ router.post("/conversations", async (req, res) => {
       .values({ listingId, consumerId: userId, ownerId: listing.ownerId ?? null })
       .returning();
 
-    res.status(201).json(conv);
+    return res.status(201).json(conv);
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "POST /conversations");
-    res.status(500).json({ error: "Failed to create conversation" });
+    return res.status(500).json({ error: "Failed to create conversation" });
   }
 });
 
@@ -127,11 +127,11 @@ router.get("/conversations", async (req, res) => {
       .from(conversationsTable)
       .where(eq(conversationsTable.consumerId, userId));
 
-    res.json(await buildConversationList(convRows));
+    return res.json(await buildConversationList(convRows));
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "GET /conversations");
-    res.status(500).json({ error: "Failed to fetch conversations" });
+    return res.status(500).json({ error: "Failed to fetch conversations" });
   }
 });
 
@@ -163,11 +163,11 @@ router.get("/conversations/:id/messages", async (req, res) => {
       .where(eq(messagesTable.conversationId, convId))
       .orderBy(messagesTable.createdAt);
 
-    res.json(messages);
+    return res.json(messages);
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "GET /conversations/:id/messages");
-    res.status(500).json({ error: "Failed to fetch messages" });
+    return res.status(500).json({ error: "Failed to fetch messages" });
   }
 });
 
@@ -188,11 +188,11 @@ router.post("/conversations/:id/messages", async (req, res) => {
       .values({ conversationId: convId, senderId: userId, content })
       .returning();
 
-    res.status(201).json(msg);
+    return res.status(201).json(msg);
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "POST /conversations/:id/messages");
-    res.status(500).json({ error: "Failed to send message" });
+    return res.status(500).json({ error: "Failed to send message" });
   }
 });
 
@@ -217,11 +217,11 @@ router.get("/broker/conversations", async (req, res) => {
       .from(conversationsTable)
       .where(inArray(conversationsTable.listingId, listingIds));
 
-    res.json(await buildConversationList(convRows));
+    return res.json(await buildConversationList(convRows));
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "GET /broker/conversations");
-    res.status(500).json({ error: "Failed to fetch broker conversations" });
+    return res.status(500).json({ error: "Failed to fetch broker conversations" });
   }
 });
 
@@ -258,11 +258,11 @@ router.get("/broker/conversations/:id/messages", async (req, res) => {
       .where(eq(messagesTable.conversationId, convId))
       .orderBy(messagesTable.createdAt);
 
-    res.json(messages);
+    return res.json(messages);
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "GET /broker/conversations/:id/messages");
-    res.status(500).json({ error: "Failed to fetch messages" });
+    return res.status(500).json({ error: "Failed to fetch messages" });
   }
 });
 
@@ -286,11 +286,11 @@ router.post("/broker/conversations/:id/messages", async (req, res) => {
       .values({ conversationId: convId, senderId: userId, content })
       .returning();
 
-    res.status(201).json(msg);
+    return res.status(201).json(msg);
   } catch (err: any) {
     if (err.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "POST /broker/conversations/:id/messages");
-    res.status(500).json({ error: "Failed to send message" });
+    return res.status(500).json({ error: "Failed to send message" });
   }
 });
 

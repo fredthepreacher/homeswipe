@@ -3,9 +3,9 @@ import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
-const ADMIN_EMAIL    = process.env["ADMIN_EMAIL"]    ?? "admin@homesweep.com";
-const ADMIN_PASSWORD = process.env["ADMIN_PASSWORD"] ?? "Admin@HomeSweep1";
-const ADMIN_NAME     = "HomeSweep Admin";
+const ADMIN_EMAIL    = process.env["ADMIN_EMAIL"]    ?? "admin@homeswipe.com";
+const ADMIN_PASSWORD = process.env["ADMIN_PASSWORD"] ?? "Admin@HomeSwipe1";
+const ADMIN_NAME     = "HomeSwipe Admin";
 
 export async function seedAdminUser() {
   try {

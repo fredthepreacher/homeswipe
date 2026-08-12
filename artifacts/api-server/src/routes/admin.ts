@@ -6,7 +6,7 @@ import { desc, count, gte, sql } from "drizzle-orm";
 import { logAction } from "../lib/audit";
 
 const router: IRouter = Router();
-const JWT_SECRET = process.env["JWT_SECRET"] || "homesweep-jwt-dev-secret-2025";
+const JWT_SECRET = process.env["JWT_SECRET"]!;
 
 function requireAdmin(req: any): number {
   const header = req.headers["authorization"];
@@ -107,7 +107,7 @@ router.get("/admin/listings", async (req, res) => {
         description: l.description,
         createdAt: l.createdAt,
         ownerId: l.ownerId,
-        ownerName: l.ownerId ? (ownerMap.get(l.ownerId) ?? "Unknown") : "HomeSweep (seeded)",
+        ownerName: l.ownerId ? (ownerMap.get(l.ownerId) ?? "Unknown") : "HomeSwipe (seeded)",
       }))
     );
   } catch (err: any) {
@@ -196,7 +196,7 @@ router.post("/admin/login", async (req, res) => {
       ipAddress: req.ip,
     });
 
-    res.json({
+    return res.json({
       token,
       user: {
         id: user.id,
@@ -209,7 +209,7 @@ router.post("/admin/login", async (req, res) => {
     });
   } catch (err: any) {
     req.log.error({ err }, "Admin login failed");
-    res.status(500).json({ error: "Login failed" });
+    return res.status(500).json({ error: "Login failed" });
   }
 });
 

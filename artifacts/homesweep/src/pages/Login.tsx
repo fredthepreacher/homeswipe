@@ -5,7 +5,7 @@ import { Eye, EyeOff, Fingerprint, Mail, Phone, AlertCircle, ChevronDown } from 
 import { useAuth } from "@/context/AuthContext";
 import { authApi } from "@/lib/auth-api";
 import { useWebAuthn } from "@/hooks/use-webauthn";
-import { HomeSweepLogo } from "@/components/HomeSweepLogo";
+import { HomeSwipeLogo } from "@/components/HomeSwipeLogo";
 
 type Tab = "email" | "phone";
 
@@ -80,7 +80,7 @@ export default function Login() {
   const [biometricLoading, setBiometricLoading] = useState(false);
   const [socialMsg, setSocialMsg] = useState("");
 
-  const storedCredentialId = localStorage.getItem("homesweep_webauthn_id");
+  const storedCredentialId = localStorage.getItem("homeswipe_webauthn_id");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -133,7 +133,7 @@ export default function Login() {
       >
         {/* Logo */}
         <div className="mb-9">
-          <HomeSweepLogo className="text-3xl mb-2" />
+          <HomeSwipeLogo className="text-3xl mb-2" />
           <p className="text-muted-foreground text-sm">Find your perfect home, one swipe at a time.</p>
         </div>
 

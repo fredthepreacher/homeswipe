@@ -3,7 +3,7 @@ import { useGetListings } from "@workspace/api-client-react";
 import { SwipeCard } from "@/components/SwipeCard";
 import { useSwipeActions } from "@/hooks/use-swipe-actions";
 import { MapPin, X, Star, Heart, Home as HomeIcon, Play } from "lucide-react";
-import { HomeSweepLogo } from "@/components/HomeSweepLogo";
+import { HomeSwipeLogo } from "@/components/HomeSwipeLogo";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 
 const AD_EVERY = 5; // show ad every N swipes
@@ -108,7 +108,7 @@ export default function Home() {
               {/* Ad placeholder */}
               <div className="bg-gradient-to-br from-primary/80 to-primary h-44 flex flex-col items-center justify-center gap-3 px-4 text-center">
                 <Play className="w-10 h-10 text-white/90" strokeWidth={1.5} />
-                <p className="text-white font-bold text-lg leading-tight">HomeSweep Ad</p>
+                <p className="text-white font-bold text-lg leading-tight">HomeSwipe Ad</p>
                 <p className="text-white/70 text-xs">Your ad message here · 30s</p>
               </div>
               <div className="p-5 flex flex-col items-center gap-3">
@@ -134,7 +134,7 @@ export default function Home() {
       {/* Header */}
       <header className="px-6 py-4 flex justify-between items-center flex-shrink-0">
         <h1 className="text-2xl font-bold">
-          <HomeSweepLogo />
+          <HomeSwipeLogo />
         </h1>
         <div className="flex items-center gap-2">
           {!isExhausted && (

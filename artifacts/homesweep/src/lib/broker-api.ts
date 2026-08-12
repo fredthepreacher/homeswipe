@@ -1,7 +1,7 @@
 const BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "") + "/api";
 
 function getToken() {
-  return localStorage.getItem("homesweep_token");
+  return localStorage.getItem("homeswipe_token");
 }
 
 function authHeaders() {

@@ -116,7 +116,7 @@ export default function BrokerAddListing() {
               >
                 <div className="bg-gradient-to-br from-primary/80 to-primary h-44 flex flex-col items-center justify-center gap-3 px-4 text-center">
                   <Play className="w-10 h-10 text-white/90" strokeWidth={1.5} />
-                  <p className="text-white font-bold text-lg">HomeSweep Ad</p>
+                  <p className="text-white font-bold text-lg">HomeSwipe Ad</p>
                   <p className="text-white/70 text-xs">Sponsored · 30s</p>
                 </div>
                 <div className="p-5 flex flex-col items-center gap-3">

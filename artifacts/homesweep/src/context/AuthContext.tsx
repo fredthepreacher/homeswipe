@@ -25,8 +25,8 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const TOKEN_KEY = "homesweep_token";
-const USER_KEY = "homesweep_user";
+const TOKEN_KEY = "homeswipe_token";
+const USER_KEY = "homeswipe_user";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);

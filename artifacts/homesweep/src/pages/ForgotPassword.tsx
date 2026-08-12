@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Mail, Phone, ArrowLeft, AlertCircle, CheckCircle2, SendHorizonal } from "lucide-react";
 import { authApi } from "@/lib/auth-api";
-import { HomeSweepLogo } from "@/components/HomeSweepLogo";
+import { HomeSwipeLogo } from "@/components/HomeSwipeLogo";
 
 type Tab = "email" | "phone";
 
@@ -46,7 +46,7 @@ export default function ForgotPassword() {
         </button>
 
         <div className="mb-8">
-          <HomeSweepLogo className="text-3xl mb-3" />
+          <HomeSwipeLogo className="text-3xl mb-3" />
         </div>
 
         {sent ? (

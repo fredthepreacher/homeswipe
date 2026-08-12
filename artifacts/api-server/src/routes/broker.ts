@@ -7,7 +7,7 @@ import { z } from "zod";
 import { logAction } from "../lib/audit";
 
 const router: IRouter = Router();
-const JWT_SECRET = process.env["JWT_SECRET"] || "homesweep-jwt-dev-secret-2025";
+const JWT_SECRET = process.env["JWT_SECRET"]!;
 
 function requireAuth(req: any): number {
   const header = req.headers["authorization"];
@@ -44,7 +44,7 @@ router.get("/broker/listings", async (req, res) => {
       .from(listingsTable)
       .where(eq(listingsTable.ownerId, userId));
 
-    res.json(listings.map((l) => ({
+    return res.json(listings.map((l) => ({
       id: l.id,
       price: Number(l.price),
       address: l.address,
@@ -62,7 +62,7 @@ router.get("/broker/listings", async (req, res) => {
   } catch (err: any) {
     if (err?.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "Get broker listings failed");
-    res.status(500).json({ error: "Failed to get listings" });
+    return res.status(500).json({ error: "Failed to get listings" });
   }
 });
 
@@ -89,7 +89,18 @@ router.post("/broker/listings", async (req, res) => {
       })
       .returning();
 
-    res.status(201).json({
+    const [owner] = await db.select({ name: usersTable.name, role: usersTable.role }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    void logAction({
+      userId,
+      userName: owner?.name ?? null,
+      userRole: owner?.role ?? null,
+      action: "listing.created",
+      entityType: "listing",
+      entityId: listing.id,
+      details: { address: listing.address, price: Number(listing.price), propertyType: listing.propertyType },
+      ipAddress: req.ip,
+    });
+    return res.status(201).json({
       id: listing.id,
       price: Number(listing.price),
       address: listing.address,
@@ -104,23 +115,11 @@ router.post("/broker/listings", async (req, res) => {
       description: listing.description,
       createdAt: listing.createdAt,
     });
-
-    const [owner] = await db.select({ name: usersTable.name, role: usersTable.role }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    logAction({
-      userId,
-      userName: owner?.name ?? null,
-      userRole: owner?.role ?? null,
-      action: "listing.created",
-      entityType: "listing",
-      entityId: listing.id,
-      details: { address: listing.address, price: Number(listing.price), propertyType: listing.propertyType },
-      ipAddress: req.ip,
-    });
   } catch (err: any) {
     if (err?.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     if (err?.issues) return res.status(400).json({ error: "Invalid listing data" });
     req.log.error({ err }, "Create broker listing failed");
-    res.status(500).json({ error: "Failed to create listing" });
+    return res.status(500).json({ error: "Failed to create listing" });
   }
 });
 
@@ -136,10 +135,8 @@ router.delete("/broker/listings/:id", async (req, res) => {
       .returning();
 
     if (!deleted) return res.status(404).json({ error: "Listing not found or not yours" });
-    res.json({ success: true });
-
     const [owner] = await db.select({ name: usersTable.name, role: usersTable.role }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    logAction({
+    void logAction({
       userId,
       userName: owner?.name ?? null,
       userRole: owner?.role ?? null,
@@ -149,10 +146,11 @@ router.delete("/broker/listings/:id", async (req, res) => {
       details: { address: deleted.address },
       ipAddress: req.ip,
     });
+    return res.json({ success: true });
   } catch (err: any) {
     if (err?.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "Delete listing failed");
-    res.status(500).json({ error: "Failed to delete listing" });
+    return res.status(500).json({ error: "Failed to delete listing" });
   }
 });
 
@@ -184,11 +182,11 @@ router.get("/broker/inquiries", async (req, res) => {
         createdAt: i.createdAt,
       }));
 
-    res.json(filtered);
+    return res.json(filtered);
   } catch (err: any) {
     if (err?.message === "Unauthorized") return res.status(401).json({ error: "Unauthorized" });
     req.log.error({ err }, "Get inquiries failed");
-    res.status(500).json({ error: "Failed to get inquiries" });
+    return res.status(500).json({ error: "Failed to get inquiries" });
   }
 });
 
@@ -204,19 +202,18 @@ router.post("/listings/:id/inquire", async (req, res) => {
       .values({ listingId, name: body.name, email: body.email, message: body.message })
       .returning();
 
-    res.status(201).json({ id: inquiry.id, success: true });
-
-    logAction({
+    void logAction({
       action: "inquiry.submitted",
       entityType: "listing",
       entityId: listingId,
       details: { name: body.name, email: body.email, listingId },
       ipAddress: req.ip,
     });
+    return res.status(201).json({ id: inquiry.id, success: true });
   } catch (err: any) {
     if (err?.issues) return res.status(400).json({ error: "Invalid inquiry data" });
     req.log.error({ err }, "Create inquiry failed");
-    res.status(500).json({ error: "Failed to submit inquiry" });
+    return res.status(500).json({ error: "Failed to submit inquiry" });
   }
 });
 

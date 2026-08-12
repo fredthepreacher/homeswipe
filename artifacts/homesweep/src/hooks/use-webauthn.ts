@@ -4,7 +4,7 @@
  * and Windows Hello on desktop.
  */
 
-const RP_NAME = "HomeSweep";
+const RP_NAME = "HomeSwipe";
 
 function bufferToBase64(buf: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
@@ -17,10 +17,10 @@ function base64ToBuffer(b64: string): ArrayBuffer {
   return buf.buffer;
 }
 
-function randomChallenge(): Uint8Array {
+function randomChallenge(): ArrayBuffer {
   const arr = new Uint8Array(32);
   crypto.getRandomValues(arr);
-  return arr;
+  return arr.buffer as ArrayBuffer;
 }
 
 export function useWebAuthn() {
