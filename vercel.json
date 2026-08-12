@@ -1,9 +1,0 @@
-{
-  "buildCommand": "pnpm --filter @workspace/homesweep run build",
-  "outputDirectory": "artifacts/homesweep/dist",
-  "installCommand": "pnpm install",
-  "framework": null,
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
