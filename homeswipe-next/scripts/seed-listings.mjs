@@ -1,15 +1,22 @@
 /**
  * Seeds demo Manhattan listings so the swipe feed has content.
  *
- * Idempotent: every row it creates is owned by SEED_BROKER_ID, and the script
- * clears those rows (and anything referencing them) before re-inserting, so it
- * can be run repeatedly without piling up duplicates.
+ * Safe by default: if seed listings already exist it exits without touching
+ * anything. Pass --reset to delete and recreate them.
  *
- * Run: npm run db:seed
+ * The distinction matters because local .env.local currently points at the
+ * same Supabase project that serves production — a delete here is a delete on
+ * the live site. --reset also refuses to run when it would destroy consumer
+ * activity (swipes, conversations, inquiries) against the seed listings.
+ *
+ * Run: npm run db:seed          (insert only if absent)
+ *      npm run db:seed -- --reset
  */
 import { Client } from "pg";
 
 const SEED_BROKER_ID = "seed_broker_demo";
+const RESET = process.argv.includes("--reset");
+const FORCE = process.argv.includes("--force");
 
 const LISTINGS = [
   { price: 1250000, address: "310 W 52nd St, Apt 14B", bedrooms: 2, bathrooms: 2,   sqft: 1100, propertyType: "Condo",     subtype: "High-Rise",  description: "Sun-drenched corner unit in Hell's Kitchen with floor-to-ceiling windows, chef's kitchen, and skyline views from every room.", imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&q=80" },
@@ -41,6 +48,43 @@ try {
      on conflict (id) do nothing`,
     [SEED_BROKER_ID]
   );
+
+  const { rows: [existing] } = await client.query(
+    `select count(*)::int n from listings where owner_id = $1`,
+    [SEED_BROKER_ID]
+  );
+
+  if (existing.n > 0 && !RESET) {
+    console.log(
+      `${existing.n} seed listings already present — nothing to do.\n` +
+        `Pass --reset to delete and recreate them.`
+    );
+    process.exit(0);
+  }
+
+  if (RESET && existing.n > 0) {
+    // Refuse to discard real consumer activity by accident.
+    const { rows: [activity] } = await client.query(
+      `select
+         (select count(*) from swipes s
+            join listings l on l.id = s.listing_id where l.owner_id = $1)::int swipes,
+         (select count(*) from conversations c
+            join listings l on l.id = c.listing_id where l.owner_id = $1)::int convos,
+         (select count(*) from inquiries i
+            join listings l on l.id = i.listing_id where l.owner_id = $1)::int inquiries`,
+      [SEED_BROKER_ID]
+    );
+
+    const total = activity.swipes + activity.convos + activity.inquiries;
+    if (total > 0 && !FORCE) {
+      console.error(
+        `Refusing to reset: ${activity.swipes} swipe(s), ${activity.convos} conversation(s), ` +
+          `and ${activity.inquiries} inquiry/inquiries reference these listings and would be deleted.\n` +
+          `Re-run with --force if that is genuinely what you want.`
+      );
+      process.exit(1);
+    }
+  }
 
   // Clear prior seed rows plus anything referencing them, so FKs stay valid.
   await client.query(

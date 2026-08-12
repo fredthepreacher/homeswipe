@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 3000",
     "db:push": "drizzle-kit push",
-    "db:seed": "node --env-file=.env.local scripts/seed-listings.mjs"
+    "db:seed": "node --env-file=.env.local scripts/seed-listings.mjs",
+    "test:rls": "node --env-file=.env.local scripts/test-rls.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6",
