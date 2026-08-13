@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { listingsTable } from "./listings";
 
 export const inquiriesTable = pgTable("inquiries", {
@@ -8,6 +8,10 @@ export const inquiriesTable = pgTable("inquiries", {
   email: text("email").notNull(),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => ({
+  // Broker inquiry list joins through listing ownership; the RLS policy does
+  // the same lookup per row.
+  listingIdx: index("inquiries_listing_id_idx").on(t.listingId),
+}));
 
 export type Inquiry = typeof inquiriesTable.$inferSelect;

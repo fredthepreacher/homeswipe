@@ -1,24 +1,20 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { listingsTable, swipesTable } from "@/lib/schema";
 import { withUserDb, unauthorized } from "@/lib/server-auth";
 
 export async function GET() {
   try {
     const res = await withUserDb(async (tx, userId) => {
-      const savedSwipes = await tx
-        .select()
+      // Single join instead of fetching swipes, deduping ids in JS, then
+      // issuing a second query with an IN list.
+      const rows = await tx
+        .select({ listing: listingsTable })
         .from(swipesTable)
-        .where(and(eq(swipesTable.userId, userId), eq(swipesTable.direction, "right")));
+        .innerJoin(listingsTable, eq(listingsTable.id, swipesTable.listingId))
+        .where(and(eq(swipesTable.userId, userId), eq(swipesTable.direction, "right")))
+        .orderBy(desc(swipesTable.createdAt));
 
-      const savedIds = [...new Set(savedSwipes.map((s) => s.listingId))];
-      if (savedIds.length === 0) return [];
-
-      const listings = await tx
-        .select()
-        .from(listingsTable)
-        .where(inArray(listingsTable.id, savedIds));
-
-      return listings.map((l) => ({
+      return rows.map(({ listing: l }) => ({
         id: l.id,
         price: Number(l.price),
         address: l.address,

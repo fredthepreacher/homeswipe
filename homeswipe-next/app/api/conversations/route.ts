@@ -13,7 +13,7 @@ export async function GET() {
         .select()
         .from(conversationsTable)
         .where(eq(conversationsTable.consumerId, userId));
-      return buildConversationList(tx, convRows);
+      return buildConversationList(tx, convRows, userId);
     });
 
     if (!res) return unauthorized();

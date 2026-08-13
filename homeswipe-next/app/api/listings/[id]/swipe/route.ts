@@ -18,11 +18,16 @@ export async function POST(
     const body = SwipeBody.parse(await request.json());
 
     const res = await withUserDb(async (tx, userId) => {
-      await tx.insert(swipesTable).values({
-        userId,
-        listingId,
-        direction: body.direction,
-      });
+      // One row per user per listing. A plain insert appended a new row on
+      // every re-swipe, so the table grew without bound and a user who changed
+      // their mind left contradictory rows behind.
+      await tx
+        .insert(swipesTable)
+        .values({ userId, listingId, direction: body.direction })
+        .onConflictDoUpdate({
+          target: [swipesTable.userId, swipesTable.listingId],
+          set: { direction: body.direction, createdAt: new Date() },
+        });
       return { success: true, saved: body.direction === "right" };
     });
 

@@ -19,7 +19,7 @@ export async function GET() {
         .from(conversationsTable)
         .where(inArray(conversationsTable.listingId, listingIds));
 
-      return buildConversationList(tx, convRows);
+      return buildConversationList(tx, convRows, userId);
     });
 
     if (!res) return unauthorized();

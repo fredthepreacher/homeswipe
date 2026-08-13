@@ -1,4 +1,4 @@
-import { pgTable, text, serial, numeric, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, numeric, integer, timestamp, index, unique } from "drizzle-orm/pg-core";
 import { usersTable } from "./users";
 
 export const listingsTable = pgTable("listings", {
@@ -16,7 +16,13 @@ export const listingsTable = pgTable("listings", {
   subtype: text("subtype"),
   description: text("description").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => ({
+  // Backs every broker-scoped query and the owner_id checks inside the
+  // conversations / inquiries / messages RLS policies.
+  ownerIdx: index("listings_owner_id_idx").on(t.ownerId),
+  // The consumer feed filters on city (Manhattan-only for launch).
+  cityIdx: index("listings_city_idx").on(t.city),
+}));
 
 export const swipesTable = pgTable("swipes", {
   id: serial("id").primaryKey(),
@@ -24,7 +30,14 @@ export const swipesTable = pgTable("swipes", {
   listingId: integer("listing_id").notNull().references(() => listingsTable.id),
   direction: text("direction").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => ({
+  // Saved-listings and feed queries filter by user, often with direction.
+  userDirectionIdx: index("swipes_user_id_direction_idx").on(t.userId, t.direction),
+  listingIdx: index("swipes_listing_id_idx").on(t.listingId),
+  // One row per user per listing. Re-swiping previously appended a new row
+  // every time, so the table grew without bound; the API now upserts.
+  userListingUniq: unique("swipes_user_id_listing_id_unique").on(t.userId, t.listingId),
+}));
 
 export type Listing = typeof listingsTable.$inferSelect;
 export type Swipe = typeof swipesTable.$inferSelect;

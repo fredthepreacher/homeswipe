@@ -98,9 +98,12 @@ async function seedFixtures() {
     [listing.id, BOB, ALICE]
   );
 
+  // Two unread messages from Bob (consumer) and one from Alice (broker), so
+  // unread counts differ by viewer and a perspective bug cannot pass.
   await c.query(
-    `insert into messages (conversation_id, sender_id, content) values ($1,$2,'fixture message')`,
-    [convo.id, BOB]
+    `insert into messages (conversation_id, sender_id, content) values
+       ($1,$2,'from bob 1'), ($1,$2,'from bob 2'), ($1,$3,'from alice 1')`,
+    [convo.id, BOB, ALICE]
   );
 
   await c.query(
@@ -160,7 +163,7 @@ async function cleanup() {
     check("can read the public listings feed", feed.rows.length === 1);
 
     const msgs = await c.query("select id from messages where conversation_id = $1", [convoId]);
-    check("can read own conversation's messages", msgs.rows.length === 1);
+    check("can read own conversation's messages", msgs.rows.length === 3);
   });
 
   console.log("\nisolation — unrelated consumer (mallory)");
@@ -215,6 +218,26 @@ async function cleanup() {
     check("cannot delete a listing he does not own", del.rowCount === 0, `${del.rowCount} rows`);
   });
 
+  // Unread is relative to the viewer: messages someone else sent me that I
+  // have not read. Serving both inboxes from one hardcoded perspective made
+  // the broker's badge count their own outgoing messages.
+  console.log("\nunread counts are viewer-relative");
+  const unreadFor = (viewer) =>
+    asUser(viewer, async () => {
+      const r = await c.query(
+        `select count(*)::int n from messages
+         where conversation_id = $1 and sender_id <> $2 and read_at is null`,
+        [convoId, viewer]
+      );
+      return r.rows[0].n;
+    });
+
+  const bobUnread = await unreadFor(BOB);
+  const aliceUnread = await unreadFor(ALICE);
+  check("consumer counts only the broker's messages", bobUnread === 1, `got ${bobUnread}, want 1`);
+  check("broker counts only the consumer's messages", aliceUnread === 2, `got ${aliceUnread}, want 2`);
+  check("the two perspectives differ", bobUnread !== aliceUnread, `both ${bobUnread}`);
+
   console.log("\nowner access — broker (alice)");
   await asUser(ALICE, async () => {
     const own = await c.query("select id from listings where owner_id = $1", [ALICE]);
@@ -227,7 +250,7 @@ async function cleanup() {
     check("sees conversations on own listing", convos.rows.length === 1);
 
     const msgs = await c.query("select id from messages where conversation_id = $1", [convoId]);
-    check("sees messages in own listing's thread", msgs.rows.length === 1);
+    check("sees messages in own listing's thread", msgs.rows.length === 3);
   });
 
   await cleanup();

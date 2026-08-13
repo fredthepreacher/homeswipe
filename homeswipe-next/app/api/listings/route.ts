@@ -1,27 +1,35 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { listingsTable, swipesTable } from "@/lib/schema";
 import { withUserDb, unauthorized } from "@/lib/server-auth";
+
+// The feed is finite. Without a cap this returned every Manhattan listing in
+// one response, which is fine at ten rows and not at ten thousand.
+const MAX_FEED = 200;
 
 export async function GET() {
   try {
     const res = await withUserDb(async (tx, userId) => {
-      // Scoped to Manhattan, NY for launch
-      const listings = await tx
-        .select()
+      // Single query. Previously this fetched the listings, then fetched every
+      // swipe the user had ever made, and intersected them in JavaScript just
+      // to set one boolean per row.
+      const rows = await tx
+        .select({
+          listing: listingsTable,
+          direction: swipesTable.direction,
+        })
         .from(listingsTable)
+        .leftJoin(
+          swipesTable,
+          and(
+            eq(swipesTable.listingId, listingsTable.id),
+            eq(swipesTable.userId, userId)
+          )
+        )
         .where(eq(listingsTable.city, "Manhattan"))
-        .orderBy(listingsTable.id);
+        .orderBy(listingsTable.id)
+        .limit(MAX_FEED);
 
-      const mySwipes = await tx
-        .select()
-        .from(swipesTable)
-        .where(eq(swipesTable.userId, userId));
-
-      const savedIds = new Set(
-        mySwipes.filter((s) => s.direction === "right").map((s) => s.listingId)
-      );
-
-      return listings.map((l) => ({
+      return rows.map(({ listing: l, direction }) => ({
         id: l.id,
         price: Number(l.price),
         address: l.address,
@@ -34,7 +42,7 @@ export async function GET() {
         propertyType: l.propertyType,
         subtype: l.subtype ?? null,
         description: l.description,
-        saved: savedIds.has(l.id),
+        saved: direction === "right",
       }));
     });
 

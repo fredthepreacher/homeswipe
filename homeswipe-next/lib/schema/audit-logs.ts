@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, index } from "drizzle-orm/pg-core";
 
 export const auditLogsTable = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
@@ -11,6 +11,10 @@ export const auditLogsTable = pgTable("audit_logs", {
   details: text("details"),
   ipAddress: text("ip_address"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => ({
+  // The admin log is ordered by recency, and the stats endpoint counts
+  // today's entries — both scan this column on the fastest-growing table.
+  createdAtIdx: index("audit_logs_created_at_idx").on(t.createdAt),
+}));
 
 export type AuditLog = typeof auditLogsTable.$inferSelect;
